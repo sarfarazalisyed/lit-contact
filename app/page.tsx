@@ -1,118 +1,719 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 
-const faqs = [
-  { q: 'Who is LIT School for?', a: 'LIT is for creators, hustlers, and anyone who wants to build a career in the creator economy — no prior experience needed.' },
-  { q: 'How long is the program?', a: 'Our programs range from 3 to 6 months depending on the track you choose.' },
-  { q: 'Is it online or in-person?', a: 'LIT is fully online and live — you learn in real-time with a cohort of peers.' },
-  { q: 'How much does it cost?', a: 'Pricing varies by program. Fill out the contact form and our team will share all details with you.' },
-  { q: 'Will I get a certificate?', a: 'Yes! You get a certificate of completion and access to the LIT alumni network.' },
+/* ─────────────────────────────────────────────
+   FAQ Data
+   ───────────────────────────────────────────── */
+const mainFaqs = [
+  {
+    q: 'How is The LIT School different from other colleges?',
+    a: 'At The LIT School, students don\'t just study marketing or entrepreneurship — they live it by working directly with brands, solving 50–100+ real briefs, and learning from industry leaders.'
+  },
+  {
+    q: 'What programs are offered by LIT School?',
+    a: 'LIT School has 2 Undergraduate programmes:\n- Next Gen Business Programme\n- CreatorPreneur Programme\n\nAlong with 2 Evening School Programmes:\n- Creator Marketer Programme\n- Creator Plus Programme'
+  },
+  {
+    q: 'What is the duration of the programmes?',
+    a: 'The Next Gen Business is a 15 month Programme that will consist of 12 months of Experiential Learning + 3 months of Paid Internship.\n\nThe Creator + Programme is a 12 month programme that consists of 10 months of Experiential Learning + 2 months of Paid Internship.'
+  },
 ]
 
-export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [errors, setErrors] = useState<any>({})
-  const [status, setStatus] = useState<'idle'|'loading'|'success'|'error'>('idle')
-  const [openFaq, setOpenFaq] = useState<number|null>(null)
+const additionalFaqs = [
+  'Is the programme conducted online or offline?',
+  'What are the Programme timings?',
+  'Who are some industry experts that have visited The LIT School?',
+  'How many students are there per batch?',
+  'What is the application process?',
+  'Does The LIT School offer scholarships?',
+  'Does The LIT School offer placement assistance?',
+  'Does LIT School offer scholarships?',
+  'Do the evening school programmes offer a diploma?',
+  'Does the UG programme offer a Bachelors Degree?',
+]
 
-  function validate() {
-    const e: any = {}
-    if (!form.name.trim()) e.name = 'Name is required'
+/* ─────────────────────────────────────────────
+   Intersection Observer Hook
+   ───────────────────────────────────────────── */
+function useScrollAnimation() {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    )
+
+    const el = ref.current
+    if (el) {
+      const targets = el.querySelectorAll('.animate-on-scroll')
+      targets.forEach((t) => observer.observe(t))
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  return ref
+}
+
+/* ─────────────────────────────────────────────
+   Main Page Component
+   ───────────────────────────────────────────── */
+export default function ContactPage() {
+  const [form, setForm] = useState({
+    name: '', email: '', dob: '', phone: '',
+    gender: '', location: '', enquiryType: '',
+    courseInterest: '', message: ''
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [navScrolled, setNavScrolled] = useState(false)
+  const scrollRef = useScrollAnimation()
+
+  useEffect(() => {
+    const handleScroll = () => setNavScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const validate = useCallback(() => {
+    const e: Record<string, string> = {}
+    if (!form.name.trim()) e.name = 'Full name is required'
     if (!form.email.trim()) e.email = 'Email is required'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email'
-    if (!form.message.trim()) e.message = 'Message is required'
+    if (!form.phone.trim()) e.phone = 'Phone number is required'
     return e
-  }
+  }, [form])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const errs = validate()
-    if (Object.keys(errs).length) return setErrors(errs)
+    setErrors(errs)
+    if (Object.keys(errs).length) return
     setStatus('loading')
-    const res = await fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    })
-    if (res.ok) setStatus('success')
-    else setStatus('error')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+      setStatus(res.ok ? 'success' : 'error')
+    } catch {
+      setStatus('error')
+    }
   }
 
+  /* ─── Success Screen ─── */
   if (status === 'success') return (
-    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0a0a0a'}}>
-      <div style={{textAlign:'center',color:'white'}}>
-        <h1 style={{fontSize:'2rem',marginBottom:'1rem'}}>🎉 Thanks! We'll be in touch soon.</h1>
-        <button onClick={() => { setStatus('idle'); setForm({name:'',email:'',message:''}) }}
-          style={{padding:'12px 24px',background:'#6c47ff',color:'white',border:'none',borderRadius:'8px',cursor:'pointer',fontSize:'16px'}}>
-          Send another message
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-primary)', position: 'relative', zIndex: 1
+    }}>
+      <div style={{ textAlign: 'center', animation: 'scaleIn 0.5s ease' }}>
+        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+          Your submission has been received!
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1.1rem' }}>
+          We&apos;ll get back to you shortly.
+        </p>
+        <button onClick={() => { setStatus('idle'); setForm({ name: '', email: '', dob: '', phone: '', gender: '', location: '', enquiryType: '', courseInterest: '', message: '' }) }}
+          style={{
+            padding: '14px 32px', background: 'var(--gradient-orange)', color: 'white',
+            border: 'none', borderRadius: '999px', cursor: 'pointer', fontSize: '16px',
+            fontWeight: 700, letterSpacing: '0.5px', transition: 'all var(--transition-normal)',
+            boxShadow: '0 4px 20px rgba(249,115,22,0.3)'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(249,115,22,0.5)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(249,115,22,0.3)' }}
+        >
+          SEND ANOTHER ENQUIRY
         </button>
       </div>
     </div>
   )
 
   return (
-    <div style={{minHeight:'100vh',background:'#0a0a0a',padding:'4rem 2rem'}}>
-      <div style={{maxWidth:'560px',margin:'0 auto'}}>
+    <div ref={scrollRef} style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* Header */}
-        <h1 style={{color:'white',fontSize:'2.5rem',fontWeight:700,marginBottom:'0.5rem'}}>Contact Us</h1>
-        <p style={{color:'#888',marginBottom:'2.5rem',fontSize:'1.1rem'}}>Got a question? We'd love to hear from you.</p>
+      {/* ════════════════════════════════════════════
+          SECTION 1: Scrolling Ticker Bar
+          ════════════════════════════════════════════ */}
+      <div style={{
+        background: 'var(--blue)', height: 'var(--ticker-height)',
+        overflow: 'hidden', display: 'flex', alignItems: 'center',
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+      }}>
+        <div style={{
+          display: 'flex', whiteSpace: 'nowrap',
+          animation: 'marquee 20s linear infinite',
+        }}>
+          {[...Array(6)].map((_, i) => (
+            <span key={i} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '12px',
+              fontSize: '13px', fontWeight: 600, color: 'white',
+              letterSpacing: '0.5px', paddingRight: '40px',
+            }}>
+              NEXT BATCH STARTS ON 20TH APRIL 2026
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '24px', height: '24px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+              }}>▶</span>
+              BECOME A FULL STACK MARKETER
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '24px', height: '24px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.2)',
+              }}>▶</span>
+            </span>
+          ))}
+        </div>
+      </div>
 
-        {/* Contact Form */}
-        <form onSubmit={handleSubmit} style={{display:'flex',flexDirection:'column',gap:'1rem',marginBottom:'4rem'}}>
-          <input type="text" name="honeypot" style={{display:'none'}} tabIndex={-1} autoComplete="off"/>
-          <div>
-            <label style={{color:'#ccc',fontSize:'14px',display:'block',marginBottom:'6px'}}>Name</label>
-            <input value={form.name} onChange={e => setForm({...form,name:e.target.value})}
-              style={{width:'100%',padding:'12px',background:'#1a1a1a',border:`1px solid ${errors.name?'#ff4444':'#333'}`,borderRadius:'8px',color:'white',fontSize:'16px',boxSizing:'border-box'}}
-              placeholder="Your name"/>
-            {errors.name && <p style={{color:'#ff4444',fontSize:'13px',marginTop:'4px'}}>{errors.name}</p>}
+      {/* ════════════════════════════════════════════
+          SECTION 2: Sticky Navigation
+          ════════════════════════════════════════════ */}
+      <nav style={{
+        position: 'fixed', top: 'var(--ticker-height)', left: 0, right: 0,
+        height: 'var(--nav-height)', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', padding: '0 40px',
+        zIndex: 999, transition: 'all var(--transition-normal)',
+        background: navScrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
+        backdropFilter: navScrolled ? 'blur(20px)' : 'none',
+        borderBottom: navScrolled ? '1px solid var(--border-default)' : '1px solid transparent',
+      }}>
+        {/* LIT Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <div style={{ display: 'flex', gap: '2px' }}>
+              <div style={{ width: '4px', height: '12px', background: '#F472B6', borderRadius: '1px' }} />
+              <div style={{ width: '4px', height: '20px', background: '#A855F7', borderRadius: '1px', marginTop: '-8px' }} />
+            </div>
           </div>
-          <div>
-            <label style={{color:'#ccc',fontSize:'14px',display:'block',marginBottom:'6px'}}>Email</label>
-            <input value={form.email} onChange={e => setForm({...form,email:e.target.value})}
-              style={{width:'100%',padding:'12px',background:'#1a1a1a',border:`1px solid ${errors.email?'#ff4444':'#333'}`,borderRadius:'8px',color:'white',fontSize:'16px',boxSizing:'border-box'}}
-              placeholder="you@example.com"/>
-            {errors.email && <p style={{color:'#ff4444',fontSize:'13px',marginTop:'4px'}}>{errors.email}</p>}
-          </div>
-          <div>
-            <label style={{color:'#ccc',fontSize:'14px',display:'block',marginBottom:'6px'}}>Message</label>
-            <textarea value={form.message} onChange={e => setForm({...form,message:e.target.value})}
-              style={{width:'100%',padding:'12px',background:'#1a1a1a',border:`1px solid ${errors.message?'#ff4444':'#333'}`,borderRadius:'8px',color:'white',fontSize:'16px',boxSizing:'border-box',minHeight:'120px',resize:'vertical'}}
-              placeholder="How can we help you?"/>
-            {errors.message && <p style={{color:'#ff4444',fontSize:'13px',marginTop:'4px'}}>{errors.message}</p>}
-          </div>
-          <button type="submit" disabled={status==='loading'}
-            style={{padding:'14px',background:'#6c47ff',color:'white',border:'none',borderRadius:'8px',fontSize:'16px',fontWeight:600,cursor:'pointer',opacity:status==='loading'?0.7:1,transition:'opacity 0.2s'}}>
-            {status==='loading' ? 'Sending...' : 'Send Message'}
+          <span style={{
+            fontSize: '28px', fontWeight: 800, letterSpacing: '-1px',
+            background: 'linear-gradient(135deg, #fff 60%, #A855F7)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>LIT</span>
+        </div>
+
+        {/* Nav Buttons */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button style={{
+            padding: '10px 24px', background: 'white', color: '#0a0a0a',
+            border: '2px solid white', borderRadius: '999px', fontSize: '14px',
+            fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
+            letterSpacing: '0.3px',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'white' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#0a0a0a' }}
+          >
+            Contact Us
           </button>
-          {status==='error' && <p style={{color:'#ff4444',textAlign:'center'}}>Something went wrong. Please try again.</p>}
-        </form>
+          <button style={{
+            padding: '10px 24px', background: 'var(--gradient-cyan)',
+            color: 'white', border: 'none', borderRadius: '999px', fontSize: '14px',
+            fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
+            letterSpacing: '0.3px', boxShadow: '0 2px 15px rgba(34,211,238,0.3)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 25px rgba(34,211,238,0.5)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 15px rgba(34,211,238,0.3)' }}
+          >
+            Enquire Now
+          </button>
+        </div>
+      </nav>
 
-        {/* FAQ Section */}
-        <div>
-          <h2 style={{color:'white',fontSize:'1.5rem',fontWeight:600,marginBottom:'0.5rem'}}>Frequently asked questions</h2>
-          <p style={{color:'#888',marginBottom:'1.5rem',fontSize:'14px'}}>Answers to common questions before you reach out.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-            {faqs.map((faq, i) => (
-              <div key={i} style={{background:'#1a1a1a',borderRadius:'8px',overflow:'hidden',border:'1px solid #222'}}>
+      {/* ════════════════════════════════════════════
+          SECTION 3: Hero — Pink Card + Form
+          ════════════════════════════════════════════ */}
+      <section style={{
+        paddingTop: `calc(var(--ticker-height) + var(--nav-height) + 40px)`,
+        paddingBottom: '60px', paddingLeft: '40px', paddingRight: '40px',
+        maxWidth: '1400px', margin: '0 auto',
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px',
+        alignItems: 'start',
+      }}>
+        {/* Left Column: Pink Card + Illustration */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Pink "Get in Touch" Card */}
+          <div className="animate-on-scroll" style={{
+            background: 'var(--gradient-pink-card)',
+            borderRadius: '24px', padding: '48px 40px',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', top: '-20px', right: '-20px',
+              width: '120px', height: '120px', borderRadius: '50%',
+              background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)',
+            }} />
+            <h1 style={{
+              fontSize: '3rem', fontWeight: 800, color: 'white',
+              marginBottom: '16px', lineHeight: 1.1,
+            }}>
+              Get in Touch!
+            </h1>
+            <p style={{
+              fontSize: '1.15rem', color: 'rgba(255,255,255,0.85)',
+              lineHeight: 1.5, maxWidth: '340px',
+            }}>
+              Fill in your details below and we will get in touch!
+            </p>
+          </div>
+
+          {/* Illustration */}
+          <div className="animate-on-scroll delay-2" style={{
+            borderRadius: '24px', overflow: 'hidden',
+            background: '#7DD3FC', position: 'relative',
+            height: '340px',
+          }}>
+            <Image
+              src="/hero-illustration.png"
+              alt="Creative 3D illustration with vibrant blocks, hearts, and creator economy elements"
+              fill
+              style={{ objectFit: 'cover' }}
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Right Column: Contact Form Card */}
+        <div className="animate-on-scroll delay-1" style={{
+          background: 'rgba(26,26,26,0.9)', borderRadius: '24px',
+          padding: '36px', border: '1px solid var(--border-default)',
+          backdropFilter: 'blur(10px)',
+        }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <input type="text" name="honeypot" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+
+            {/* Row 1: Full Name + Email */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="Full Name" required error={errors.name}>
+                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                  placeholder="John" style={inputStyle(!!errors.name)} />
+              </FormField>
+              <FormField label="Email ID" required error={errors.email}>
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                  placeholder="Johndoe@example.com" style={inputStyle(!!errors.email)} />
+              </FormField>
+            </div>
+
+            {/* Row 2: DOB + Phone */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="Date of Birth" required>
+                <input type="date" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })}
+                  placeholder="dd/mm/yyyy" style={{ ...inputStyle(false), colorScheme: 'dark' }} />
+              </FormField>
+              <FormField label="Phone No." required error={errors.phone}>
+                <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
+                  placeholder="00000 00000" style={inputStyle(!!errors.phone)} />
+              </FormField>
+            </div>
+
+            {/* Row 3: Gender + Location */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <FormField label="Specify Your Gender">
+                <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
+                  style={{ ...inputStyle(false), appearance: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </FormField>
+              <FormField label="Where Do You Live?">
+                <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })}
+                  placeholder="Bangalore" style={inputStyle(false)} />
+              </FormField>
+            </div>
+
+            {/* Enquiry Type */}
+            <div>
+              <p style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500, marginBottom: '12px' }}>
+                What would you like to enquire about?
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {['LIT Programmes', 'A Career at LIT', 'Other'].map(type => (
+                  <button key={type} type="button"
+                    onClick={() => setForm({ ...form, enquiryType: type })}
+                    style={{
+                      padding: '10px 20px', borderRadius: '999px', fontSize: '14px',
+                      fontWeight: 500, cursor: 'pointer',
+                      transition: 'all var(--transition-normal)',
+                      background: form.enquiryType === type ? 'white' : 'transparent',
+                      color: form.enquiryType === type ? '#0a0a0a' : 'var(--text-primary)',
+                      border: `1.5px solid ${form.enquiryType === type ? 'white' : 'var(--border-light)'}`,
+                    }}
+                    onMouseEnter={e => { if (form.enquiryType !== type) e.currentTarget.style.borderColor = '#888' }}
+                    onMouseLeave={e => { if (form.enquiryType !== type) e.currentTarget.style.borderColor = 'var(--border-light)' }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Course Interest (conditional) */}
+            {form.enquiryType === 'LIT Programmes' && (
+              <div style={{ animation: 'fadeInUp 0.3s ease' }}>
+                <FormField label="Course of Interest">
+                  <select value={form.courseInterest} onChange={e => setForm({ ...form, courseInterest: e.target.value })}
+                    style={{ ...inputStyle(false), appearance: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
+                    <option value="">Select a programme</option>
+                    <option value="creator-marketer">Creator Marketer</option>
+                    <option value="creatorpreneur">CreatorPreneur</option>
+                    <option value="next-gen-business">Next Gen Business</option>
+                    <option value="creator-plus">Creator+</option>
+                  </select>
+                </FormField>
+              </div>
+            )}
+
+            {/* Message */}
+            <FormField label="Your Message">
+              <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+                placeholder="Tell us more about your enquiry..."
+                style={{ ...inputStyle(false), minHeight: '90px', resize: 'vertical' }} />
+            </FormField>
+
+            {/* Submit Row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '4px' }}>
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '12px',
+                background: 'var(--blue)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
+              <button type="submit" disabled={status === 'loading'}
+                style={{
+                  flex: 1, padding: '16px', background: 'var(--gradient-orange)',
+                  color: 'white', border: 'none', borderRadius: '999px', fontSize: '16px',
+                  fontWeight: 700, cursor: status === 'loading' ? 'wait' : 'pointer',
+                  letterSpacing: '1px', transition: 'all var(--transition-normal)',
+                  opacity: status === 'loading' ? 0.7 : 1,
+                  boxShadow: '0 4px 20px rgba(249,115,22,0.3)',
+                }}
+                onMouseEnter={e => { if (status !== 'loading') { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(249,115,22,0.5)' } }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(249,115,22,0.3)' }}
+              >
+                {status === 'loading' ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                    SUBMITTING...
+                  </span>
+                ) : 'SUBMIT ENQUIRY'}
+              </button>
+            </div>
+
+            {status === 'error' && (
+              <p style={{ color: 'var(--text-error)', textAlign: 'center', fontSize: '14px', animation: 'fadeIn 0.3s ease' }}>
+                Oops! Something went wrong while submitting the form. Please try again.
+              </p>
+            )}
+          </form>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          SECTION 4: FAQ Section
+          ════════════════════════════════════════════ */}
+      <section style={{
+        background: 'var(--gradient-faq)',
+        padding: '80px 40px 100px',
+        position: 'relative',
+      }}>
+        {/* Grid overlay on FAQ */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
+          backgroundSize: '40px 40px', pointerEvents: 'none',
+        }} />
+
+        <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Heading */}
+          <div className="animate-on-scroll" style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: '3.5rem', fontWeight: 400, lineHeight: 1.2 }}>
+              <span style={{ fontFamily: 'var(--font-sans)' }}>Most Common</span>
+              <br />
+              <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontStyle: 'italic', fontWeight: 400 }}>
+                Questions
+              </span>
+            </h2>
+          </div>
+
+          {/* Main FAQs with expandable answers */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
+            {mainFaqs.map((faq, i) => (
+              <div key={i} className="animate-on-scroll" style={{ transitionDelay: `${i * 0.1}s` }}>
+                {/* Question Pill */}
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  style={{width:'100%',padding:'16px',background:'none',border:'none',color:'white',fontSize:'15px',fontWeight:500,textAlign:'left',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    padding: '14px 28px', borderRadius: '999px', fontSize: '16px',
+                    fontWeight: 500, cursor: 'pointer', textAlign: 'left',
+                    transition: 'all var(--transition-normal)',
+                    background: openFaq === i ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.3)',
+                    color: 'white', border: '1px solid rgba(255,255,255,0.25)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; e.currentTarget.style.transform = 'scale(1.02)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.transform = 'scale(1)' }}
+                >
                   {faq.q}
-                  <span style={{color:'#6c47ff',fontSize:'20px',lineHeight:1}}>{openFaq === i ? '−' : '+'}</span>
                 </button>
+
+                {/* Answer Card */}
                 {openFaq === i && (
-                  <div style={{padding:'0 16px 16px',color:'#aaa',fontSize:'14px',lineHeight:1.6}}>
-                    {faq.a}
+                  <div style={{
+                    marginTop: '16px', marginLeft: '40px',
+                    padding: '28px', borderRadius: '20px',
+                    background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(15px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    animation: 'fadeInUp 0.35s ease',
+                    position: 'relative',
+                  }}>
+                    <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                      {faq.a}
+                    </div>
+                    {/* Arrow icon */}
+                    <div style={{
+                      position: 'absolute', bottom: '-16px', right: '20px',
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)',
+                      color: 'var(--purple)', fontSize: '16px',
+                    }}>↗</div>
                   </div>
                 )}
               </div>
             ))}
           </div>
-        </div>
 
+          {/* "Also asked..." */}
+          <p className="animate-on-scroll" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px', marginBottom: '24px' }}>
+            Also asked...
+          </p>
+
+          {/* Additional FAQ pills */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {additionalFaqs.map((q, i) => (
+              <button key={i} className="animate-on-scroll"
+                style={{
+                  display: 'inline-block', width: 'fit-content',
+                  padding: '14px 28px', borderRadius: '999px', fontSize: '15px',
+                  fontWeight: 500, cursor: 'pointer', textAlign: 'left',
+                  transition: 'all var(--transition-normal)',
+                  background: 'rgba(0,0,0,0.2)', color: 'white',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(10px)',
+                  transitionDelay: `${i * 0.05}s`,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; e.currentTarget.style.transform = 'translateX(8px)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateX(0)' }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          SECTION 5: Newsletter & Footer
+          ════════════════════════════════════════════ */}
+      <section style={{
+        padding: '80px 40px', maxWidth: '1400px', margin: '0 auto',
+      }}>
+        <div className="animate-on-scroll" style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center',
+        }}>
+          {/* Left: Branding Card */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(16,40,40,0.9), rgba(10,20,30,0.9))',
+            borderRadius: '24px', padding: '48px 40px', border: '1px solid var(--border-default)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* Subtle glow */}
+            <div style={{
+              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+              width: '200px', height: '200px', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(34,211,238,0.15), transparent 70%)',
+              filter: 'blur(40px)',
+            }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <p style={{ fontSize: '2.2rem', fontWeight: 700, lineHeight: 1.3 }}>
+                <span style={{ color: '#F97316' }}>✦ </span>
+                <span>learn. </span>
+                <span style={{ color: '#A855F7' }}>⬡ </span>
+                <span>innovate.</span>
+              </p>
+              <p style={{ fontSize: '2.2rem', fontWeight: 700, lineHeight: 1.3 }}>
+                <span style={{ color: '#3B82F6' }}>⚡ </span>
+                <span style={{ fontStyle: 'italic', color: '#3B82F6' }}>transform.</span>
+              </p>
+            </div>
+            {/* LIT badge */}
+            <div style={{
+              position: 'absolute', bottom: '-10px', right: '20px',
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: '#111', border: '3px solid #333',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 800, fontSize: '18px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            }}>
+              LIT
+            </div>
+          </div>
+
+          {/* Right: Newsletter Form */}
+          <div style={{
+            background: 'var(--bg-card)', borderRadius: '24px', padding: '40px',
+            border: '1px solid var(--border-default)',
+          }}>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '12px' }}>
+              Subscribe to Our Newsletter
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
+              Stay in the loop and unlock exclusive content, industry insights, and exciting updates by signing up for our newsletter today!
+            </p>
+            <div style={{ display: 'flex', gap: '0', alignItems: 'stretch' }}>
+              <input placeholder="Enter Your Email"
+                style={{
+                  flex: 1, padding: '14px 18px', background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-default)', borderRight: 'none',
+                  borderRadius: '12px 0 0 12px', color: 'white', fontSize: '15px',
+                  outline: 'none', transition: 'border-color var(--transition-normal)',
+                }}
+                onFocus={e => e.currentTarget.style.borderColor = 'var(--magenta)'}
+                onBlur={e => e.currentTarget.style.borderColor = 'var(--border-default)'}
+              />
+              <button style={{
+                padding: '14px 28px', background: 'transparent',
+                color: 'white', border: '2px solid var(--magenta)',
+                borderRadius: '0 12px 12px 0', fontSize: '14px',
+                fontWeight: 700, cursor: 'pointer', letterSpacing: '1px',
+                transition: 'all var(--transition-normal)', whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--magenta)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                SUBSCRIBE
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Bottom Bar */}
+      <footer style={{
+        padding: '20px 40px', maxWidth: '1400px', margin: '0 auto',
+        borderTop: '1px solid var(--border-default)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+          © 2025 Disruptive Edu Pvt Ltd.
+        </p>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+          All Rights Reserved
+        </p>
+      </footer>
+
+      {/* ════════════════════════════════════════════
+          Floating Action Buttons
+          ════════════════════════════════════════════ */}
+      <div style={{
+        position: 'fixed', bottom: '24px', right: '24px',
+        display: 'flex', flexDirection: 'column', gap: '12px', zIndex: 998,
+      }}>
+        {/* WhatsApp */}
+        <a href="https://wa.me/919844443755" target="_blank" rel="noopener noreferrer"
+          style={{
+            width: '56px', height: '56px', borderRadius: '50%',
+            background: 'var(--green-whatsapp)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
+            transition: 'all var(--transition-normal)', cursor: 'pointer',
+            textDecoration: 'none',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(37,211,102,0.6)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,211,102,0.4)' }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+          </svg>
+        </a>
+
+        {/* Call */}
+        <a href="tel:+919844443755"
+          style={{
+            width: '56px', height: '56px', borderRadius: '50%',
+            background: 'var(--blue-call)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(59,130,246,0.4)',
+            transition: 'all var(--transition-normal)', cursor: 'pointer',
+            textDecoration: 'none',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(59,130,246,0.6)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.4)' }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+          </svg>
+        </a>
       </div>
+
     </div>
   )
+}
+
+/* ─────────────────────────────────────────────
+   Helper Components
+   ───────────────────────────────────────────── */
+
+function FormField({ label, required, error, children }: {
+  label: string; required?: boolean; error?: string; children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label style={{
+        color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500,
+        display: 'block', marginBottom: '8px',
+      }}>
+        {label}
+        {required && <span style={{ color: 'var(--pink)' }}>*</span>}
+      </label>
+      {children}
+      {error && (
+        <p style={{ color: 'var(--text-error)', fontSize: '12px', marginTop: '4px', animation: 'fadeIn 0.2s ease' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function inputStyle(hasError: boolean): React.CSSProperties {
+  return {
+    width: '100%', padding: '13px 16px',
+    background: 'var(--bg-secondary)',
+    border: `1px solid ${hasError ? 'var(--text-error)' : 'var(--border-default)'}`,
+    borderRadius: '12px', color: 'white', fontSize: '15px',
+    outline: 'none', transition: 'all var(--transition-normal)',
+    boxSizing: 'border-box' as const,
+  }
 }

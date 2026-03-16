@@ -76,6 +76,7 @@ export default function ContactPage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [navScrolled, setNavScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const scrollRef = useScrollAnimation()
 
   useEffect(() => {
@@ -83,6 +84,19 @@ export default function ContactPage() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Close menu on resize to desktop
+  useEffect(() => {
+    const handleResize = () => { if (window.innerWidth > 1024) setMenuOpen(false) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Prevent body scroll when menu open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   const validate = useCallback(() => {
     const e: Record<string, string> = {}
@@ -115,11 +129,11 @@ export default function ContactPage() {
   if (status === 'success') return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-primary)', position: 'relative', zIndex: 1
+      background: 'var(--bg-primary)', position: 'relative', zIndex: 1, padding: 'var(--page-pad)',
     }}>
       <div style={{ textAlign: 'center', animation: 'scaleIn 0.5s ease' }}>
         <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, marginBottom: '0.5rem' }}>
           Your submission has been received!
         </h1>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '1.1rem' }}>
@@ -156,7 +170,7 @@ export default function ContactPage() {
           display: 'flex', whiteSpace: 'nowrap',
           animation: 'marquee 20s linear infinite',
         }}>
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <span key={i} style={{
               display: 'inline-flex', alignItems: 'center', gap: '12px',
               fontSize: '13px', fontWeight: 600, color: 'white',
@@ -166,13 +180,13 @@ export default function ContactPage() {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '24px', height: '24px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.2)', flexShrink: 0,
               }}>▶</span>
               BECOME A FULL STACK MARKETER
               <span style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '24px', height: '24px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.2)', flexShrink: 0,
               }}>▶</span>
             </span>
           ))}
@@ -182,11 +196,7 @@ export default function ContactPage() {
       {/* ════════════════════════════════════════════
           SECTION 2: Sticky Navigation
           ════════════════════════════════════════════ */}
-      <nav style={{
-        position: 'fixed', top: 'var(--ticker-height)', left: 0, right: 0,
-        height: 'var(--nav-height)', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', padding: '0 40px',
-        zIndex: 999, transition: 'all var(--transition-normal)',
+      <nav className="nav-bar" style={{
         background: navScrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
         backdropFilter: navScrolled ? 'blur(20px)' : 'none',
         borderBottom: navScrolled ? '1px solid var(--border-default)' : '1px solid transparent',
@@ -206,9 +216,14 @@ export default function ContactPage() {
           }}>LIT</span>
         </div>
 
-        {/* Nav Buttons */}
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <button style={{
+        {/* Nav Buttons + Hamburger */}
+        <div className="nav-buttons">
+          {/* Hamburger — only visible on mobile/tablet */}
+          <button className="hamburger-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu">
+            <span /><span /><span />
+          </button>
+
+          <button className="nav-btn-contact" style={{
             padding: '10px 24px', background: 'white', color: '#0a0a0a',
             border: '2px solid white', borderRadius: '999px', fontSize: '14px',
             fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
@@ -219,7 +234,7 @@ export default function ContactPage() {
           >
             Contact Us
           </button>
-          <button style={{
+          <button className="nav-btn-enquire" style={{
             padding: '10px 24px', background: 'var(--gradient-cyan)',
             color: 'white', border: 'none', borderRadius: '999px', fontSize: '14px',
             fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
@@ -234,21 +249,46 @@ export default function ContactPage() {
       </nav>
 
       {/* ════════════════════════════════════════════
-          SECTION 3: Hero — Pink Card + Form
+          Mobile Menu Drawer
           ════════════════════════════════════════════ */}
-      <section style={{
-        paddingTop: `calc(var(--ticker-height) + var(--nav-height) + 40px)`,
-        paddingBottom: '60px', paddingLeft: '40px', paddingRight: '40px',
-        maxWidth: '1400px', margin: '0 auto',
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px',
-        alignItems: 'start',
-      }}>
-        {/* Left Column: Pink Card + Illustration */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className={`mobile-menu-overlay ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} />
+      <div className={`mobile-menu-drawer ${menuOpen ? 'open' : ''}`}>
+        <button className="mobile-menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+          ✕
+        </button>
+        <button style={{
+          padding: '14px 0', background: 'transparent', color: 'white',
+          border: 'none', borderBottom: '1px solid var(--border-default)',
+          fontSize: '16px', fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+        }}>
+          Home
+        </button>
+        <button style={{
+          padding: '14px 0', background: 'transparent', color: 'white',
+          border: 'none', borderBottom: '1px solid var(--border-default)',
+          fontSize: '16px', fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+        }}>
+          Contact Us
+        </button>
+        <button style={{
+          padding: '14px 28px', background: 'var(--gradient-cyan)',
+          color: 'white', border: 'none', borderRadius: '999px', fontSize: '16px',
+          fontWeight: 600, cursor: 'pointer', marginTop: '16px', textAlign: 'center',
+        }}>
+          Enquire Now
+        </button>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          SECTION 3: Hero — Form (right/top) + Pink Card (left/bottom)
+          ════════════════════════════════════════════ */}
+      <section className="hero-section">
+        {/* Left Column: Pink Card + Illustration — on mobile this goes BELOW */}
+        <div className="hero-left">
           {/* Pink "Get in Touch" Card */}
           <div className="animate-on-scroll" style={{
             background: 'var(--gradient-pink-card)',
-            borderRadius: '24px', padding: '48px 40px',
+            borderRadius: '24px', padding: 'clamp(32px, 5vw, 48px) clamp(24px, 4vw, 40px)',
             position: 'relative', overflow: 'hidden',
           }}>
             <div style={{
@@ -257,13 +297,13 @@ export default function ContactPage() {
               background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)',
             }} />
             <h1 style={{
-              fontSize: '3rem', fontWeight: 800, color: 'white',
+              fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, color: 'white',
               marginBottom: '16px', lineHeight: 1.1,
             }}>
               Get in Touch!
             </h1>
             <p style={{
-              fontSize: '1.15rem', color: 'rgba(255,255,255,0.85)',
+              fontSize: 'clamp(0.95rem, 2vw, 1.15rem)', color: 'rgba(255,255,255,0.85)',
               lineHeight: 1.5, maxWidth: '340px',
             }}>
               Fill in your details below and we will get in touch!
@@ -271,11 +311,7 @@ export default function ContactPage() {
           </div>
 
           {/* Illustration */}
-          <div className="animate-on-scroll delay-2" style={{
-            borderRadius: '24px', overflow: 'hidden',
-            background: '#7DD3FC', position: 'relative',
-            height: '340px',
-          }}>
+          <div className="animate-on-scroll delay-2 hero-illustration">
             <Image
               src="/hero-illustration.png"
               alt="Creative 3D illustration with vibrant blocks, hearts, and creator economy elements"
@@ -286,17 +322,17 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Right Column: Contact Form Card */}
-        <div className="animate-on-scroll delay-1" style={{
+        {/* Right Column: Contact Form Card — on mobile this goes FIRST */}
+        <div className="animate-on-scroll delay-1 hero-right" style={{
           background: 'rgba(26,26,26,0.9)', borderRadius: '24px',
-          padding: '36px', border: '1px solid var(--border-default)',
+          padding: 'clamp(20px, 4vw, 36px)', border: '1px solid var(--border-default)',
           backdropFilter: 'blur(10px)',
         }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <input type="text" name="honeypot" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
 
             {/* Row 1: Full Name + Email */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="form-row-2col">
               <FormField label="Full Name" required error={errors.name}>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                   placeholder="John" style={inputStyle(!!errors.name)} />
@@ -308,7 +344,7 @@ export default function ContactPage() {
             </div>
 
             {/* Row 2: DOB + Phone */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="form-row-2col">
               <FormField label="Date of Birth" required>
                 <input type="date" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })}
                   placeholder="dd/mm/yyyy" style={{ ...inputStyle(false), colorScheme: 'dark' }} />
@@ -320,7 +356,7 @@ export default function ContactPage() {
             </div>
 
             {/* Row 3: Gender + Location */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="form-row-2col">
               <FormField label="Specify Your Gender">
                 <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
                   style={{ ...inputStyle(false), appearance: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
@@ -430,11 +466,7 @@ export default function ContactPage() {
       {/* ════════════════════════════════════════════
           SECTION 4: FAQ Section
           ════════════════════════════════════════════ */}
-      <section style={{
-        background: 'var(--gradient-faq)',
-        padding: '80px 40px 100px',
-        position: 'relative',
-      }}>
+      <section className="faq-section">
         {/* Grid overlay on FAQ */}
         <div style={{
           position: 'absolute', inset: 0,
@@ -445,7 +477,7 @@ export default function ContactPage() {
         <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           {/* Heading */}
           <div className="animate-on-scroll" style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 400, lineHeight: 1.2 }}>
+            <h2 className="faq-heading">
               <span style={{ fontFamily: 'var(--font-sans)' }}>Most Common</span>
               <br />
               <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontStyle: 'italic', fontWeight: 400 }}>
@@ -463,12 +495,13 @@ export default function ContactPage() {
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    padding: '14px 28px', borderRadius: '999px', fontSize: '16px',
+                    padding: 'clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px)',
+                    borderRadius: '999px', fontSize: 'clamp(14px, 2vw, 16px)',
                     fontWeight: 500, cursor: 'pointer', textAlign: 'left',
                     transition: 'all var(--transition-normal)',
                     background: openFaq === i ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.3)',
                     color: 'white', border: '1px solid rgba(255,255,255,0.25)',
-                    backdropFilter: 'blur(10px)',
+                    backdropFilter: 'blur(10px)', maxWidth: '100%',
                   }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; e.currentTarget.style.transform = 'scale(1.02)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.transform = 'scale(1)' }}
@@ -478,14 +511,7 @@ export default function ContactPage() {
 
                 {/* Answer Card */}
                 {openFaq === i && (
-                  <div style={{
-                    marginTop: '16px', marginLeft: '40px',
-                    padding: '28px', borderRadius: '20px',
-                    background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(15px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    animation: 'fadeInUp 0.35s ease',
-                    position: 'relative',
-                  }}>
+                  <div className="faq-answer-card">
                     <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
                       {faq.a}
                     </div>
@@ -514,8 +540,9 @@ export default function ContactPage() {
             {additionalFaqs.map((q, i) => (
               <button key={i} className="animate-on-scroll"
                 style={{
-                  display: 'inline-block', width: 'fit-content',
-                  padding: '14px 28px', borderRadius: '999px', fontSize: '15px',
+                  display: 'inline-block', width: 'fit-content', maxWidth: '100%',
+                  padding: 'clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px)',
+                  borderRadius: '999px', fontSize: 'clamp(13px, 2vw, 15px)',
                   fontWeight: 500, cursor: 'pointer', textAlign: 'left',
                   transition: 'all var(--transition-normal)',
                   background: 'rgba(0,0,0,0.2)', color: 'white',
@@ -536,16 +563,13 @@ export default function ContactPage() {
       {/* ════════════════════════════════════════════
           SECTION 5: Newsletter & Footer
           ════════════════════════════════════════════ */}
-      <section style={{
-        padding: '80px 40px', maxWidth: '1400px', margin: '0 auto',
-      }}>
-        <div className="animate-on-scroll" style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center',
-        }}>
+      <section className="newsletter-section">
+        <div className="animate-on-scroll newsletter-grid">
           {/* Left: Branding Card */}
           <div style={{
             background: 'linear-gradient(135deg, rgba(16,40,40,0.9), rgba(10,20,30,0.9))',
-            borderRadius: '24px', padding: '48px 40px', border: '1px solid var(--border-default)',
+            borderRadius: '24px', padding: 'clamp(32px, 5vw, 48px) clamp(24px, 4vw, 40px)',
+            border: '1px solid var(--border-default)',
             position: 'relative', overflow: 'hidden',
           }}>
             {/* Subtle glow */}
@@ -556,13 +580,13 @@ export default function ContactPage() {
               filter: 'blur(40px)',
             }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <p style={{ fontSize: '2.2rem', fontWeight: 700, lineHeight: 1.3 }}>
+              <p style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 700, lineHeight: 1.3 }}>
                 <span style={{ color: '#F97316' }}>✦ </span>
                 <span>learn. </span>
                 <span style={{ color: '#A855F7' }}>⬡ </span>
                 <span>innovate.</span>
               </p>
-              <p style={{ fontSize: '2.2rem', fontWeight: 700, lineHeight: 1.3 }}>
+              <p style={{ fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', fontWeight: 700, lineHeight: 1.3 }}>
                 <span style={{ color: '#3B82F6' }}>⚡ </span>
                 <span style={{ fontStyle: 'italic', color: '#3B82F6' }}>transform.</span>
               </p>
@@ -582,10 +606,11 @@ export default function ContactPage() {
 
           {/* Right: Newsletter Form */}
           <div style={{
-            background: 'var(--bg-card)', borderRadius: '24px', padding: '40px',
+            background: 'var(--bg-card)', borderRadius: '24px',
+            padding: 'clamp(24px, 4vw, 40px)',
             border: '1px solid var(--border-default)',
           }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '12px' }}>
+            <h3 style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', fontWeight: 700, marginBottom: '12px' }}>
               Subscribe to Our Newsletter
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
@@ -598,12 +623,13 @@ export default function ContactPage() {
                   border: '1px solid var(--border-default)', borderRight: 'none',
                   borderRadius: '12px 0 0 12px', color: 'white', fontSize: '15px',
                   outline: 'none', transition: 'border-color var(--transition-normal)',
+                  minWidth: 0,
                 }}
                 onFocus={e => e.currentTarget.style.borderColor = 'var(--magenta)'}
                 onBlur={e => e.currentTarget.style.borderColor = 'var(--border-default)'}
               />
               <button style={{
-                padding: '14px 28px', background: 'transparent',
+                padding: '14px clamp(16px, 3vw, 28px)', background: 'transparent',
                 color: 'white', border: '2px solid var(--magenta)',
                 borderRadius: '0 12px 12px 0', fontSize: '14px',
                 fontWeight: 700, cursor: 'pointer', letterSpacing: '1px',
@@ -620,11 +646,7 @@ export default function ContactPage() {
       </section>
 
       {/* Footer Bottom Bar */}
-      <footer style={{
-        padding: '20px 40px', maxWidth: '1400px', margin: '0 auto',
-        borderTop: '1px solid var(--border-default)',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
+      <footer className="footer-bar">
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
           © 2025 Disruptive Edu Pvt Ltd.
         </p>
@@ -636,19 +658,13 @@ export default function ContactPage() {
       {/* ════════════════════════════════════════════
           Floating Action Buttons
           ════════════════════════════════════════════ */}
-      <div style={{
-        position: 'fixed', bottom: '24px', right: '24px',
-        display: 'flex', flexDirection: 'column', gap: '12px', zIndex: 998,
-      }}>
+      <div className="floating-actions">
         {/* WhatsApp */}
         <a href="https://wa.me/919844443755" target="_blank" rel="noopener noreferrer"
+          className="floating-btn"
           style={{
-            width: '56px', height: '56px', borderRadius: '50%',
-            background: 'var(--green-whatsapp)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
+            background: 'var(--green-whatsapp)',
             boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
-            transition: 'all var(--transition-normal)', cursor: 'pointer',
-            textDecoration: 'none',
           }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(37,211,102,0.6)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(37,211,102,0.4)' }}
@@ -660,13 +676,10 @@ export default function ContactPage() {
 
         {/* Call */}
         <a href="tel:+919844443755"
+          className="floating-btn"
           style={{
-            width: '56px', height: '56px', borderRadius: '50%',
-            background: 'var(--blue-call)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
+            background: 'var(--blue-call)',
             boxShadow: '0 4px 20px rgba(59,130,246,0.4)',
-            transition: 'all var(--transition-normal)', cursor: 'pointer',
-            textDecoration: 'none',
           }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15)'; e.currentTarget.style.boxShadow = '0 6px 30px rgba(59,130,246,0.6)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(59,130,246,0.4)' }}

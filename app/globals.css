@@ -47,6 +47,7 @@
   /* Spacing */
   --nav-height: 72px;
   --ticker-height: 40px;
+  --page-pad: 40px;
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -75,6 +76,10 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
@@ -221,6 +226,188 @@ body::before {
 .animate-on-scroll.delay-6 { transition-delay: 0.6s; }
 
 /* ============================================
+   Navigation
+   ============================================ */
+
+.nav-bar {
+  position: fixed;
+  top: var(--ticker-height);
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--page-pad);
+  z-index: 999;
+  transition: all var(--transition-normal);
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.hamburger-btn {
+  display: none !important;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-light);
+  background: transparent;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0;
+  transition: all var(--transition-normal);
+}
+
+.hamburger-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all var(--transition-normal);
+}
+
+.hamburger-btn:hover {
+  border-color: white;
+}
+
+/* ============================================
+   Hero Section — Layout
+   ============================================ */
+
+.hero-section {
+  padding-top: calc(var(--ticker-height) + var(--nav-height) + 40px);
+  padding-bottom: 60px;
+  padding-left: var(--page-pad);
+  padding-right: var(--page-pad);
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* On mobile, hero stacks and the form (order:1) comes first */
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  order: 0;
+}
+
+.hero-right {
+  order: 0;
+}
+
+.hero-illustration {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #7DD3FC;
+  position: relative;
+  height: 340px;
+}
+
+/* ============================================
+   Form Field Rows
+   ============================================ */
+
+.form-row-2col {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 16px;
+}
+
+/* ============================================
+   FAQ Section
+   ============================================ */
+
+.faq-section {
+  background: var(--gradient-faq);
+  padding: 80px var(--page-pad) 100px;
+  position: relative;
+}
+
+.faq-heading {
+  font-size: 3.5rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.faq-answer-card {
+  margin-top: 16px;
+  margin-left: 40px;
+  padding: 28px;
+  border-radius: 20px;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: fadeInUp 0.35s ease;
+  position: relative;
+}
+
+/* ============================================
+   Newsletter & Footer
+   ============================================ */
+
+.newsletter-section {
+  padding: 80px var(--page-pad);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.newsletter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.footer-bar {
+  padding: 20px var(--page-pad);
+  max-width: 1400px;
+  margin: 0 auto;
+  border-top: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ============================================
+   Floating Action Buttons
+   ============================================ */
+
+.floating-actions {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 998;
+}
+
+.floating-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+/* ============================================
    Scrollbar Styling
    ============================================ */
 
@@ -268,11 +455,186 @@ textarea::placeholder {
 }
 
 /* ============================================
-   Responsive
+   Mobile Menu Drawer
    ============================================ */
 
-@media (max-width: 768px) {
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.mobile-menu-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.mobile-menu-drawer {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 280px;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-default);
+  z-index: 1002;
+  padding: 80px 24px 40px;
+  transition: right var(--transition-normal), visibility 0s linear var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  visibility: hidden;
+}
+
+.mobile-menu-drawer.open {
+  right: 0;
+  visibility: visible;
+  transition: right var(--transition-normal), visibility 0s;
+}
+
+.mobile-menu-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-light);
+  background: transparent;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.mobile-menu-close:hover {
+  border-color: white;
+}
+
+/* ============================================
+   RESPONSIVE — Tablet (≤ 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+  :root {
+    --page-pad: 24px;
+    --nav-height: 64px;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .nav-btn-contact,
+  .nav-btn-enquire {
+    display: none !important;
+  }
+
+  .hero-section {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+  }
+
+  /* On mobile/tablet: form comes first, pink card below */
+  .hero-left {
+    order: 2 !important;
+  }
+
+  .hero-right {
+    order: 1 !important;
+  }
+
+  .hero-illustration {
+    height: 280px;
+  }
+
+  .faq-heading {
+    font-size: 2.5rem;
+  }
+
+  .faq-answer-card {
+    margin-left: 16px;
+    padding: 20px;
+  }
+
+  .newsletter-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+  }
+
+  .footer-bar {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+/* ============================================
+   RESPONSIVE — Mobile (≤ 640px)
+   ============================================ */
+
+@media (max-width: 640px) {
+  :root {
+    --page-pad: 16px;
+    --nav-height: 56px;
+    --ticker-height: 60px;
+  }
+
   body::before {
     background-size: 24px 24px;
+  }
+
+  .nav-buttons .nav-btn-contact,
+  .nav-buttons .nav-btn-enquire {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .hero-section {
+    padding-top: calc(var(--ticker-height) + var(--nav-height) + 20px);
+    padding-bottom: 32px;
+    gap: 20px;
+  }
+
+  .hero-illustration {
+    height: 220px;
+  }
+
+  .form-row-2col {
+    gap: 12px;
+  }
+
+  .faq-section {
+    padding: 48px var(--page-pad) 60px;
+  }
+
+  .faq-heading {
+    font-size: 2rem;
+  }
+
+  .faq-answer-card {
+    margin-left: 0;
+    padding: 16px;
+  }
+
+  .newsletter-section {
+    padding: 40px var(--page-pad);
+  }
+
+  .floating-actions {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .floating-btn {
+    width: 48px;
+    height: 48px;
   }
 }

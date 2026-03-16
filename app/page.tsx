@@ -74,10 +74,12 @@ export default function ContactPage() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [serverError, setServerError] = useState('')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [navScrolled, setNavScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const scrollRef = useScrollAnimation()
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     const handleScroll = () => setNavScrolled(window.scrollY > 20)
@@ -98,29 +100,86 @@ export default function ContactPage() {
     return () => { document.body.style.overflow = '' }
   }, [menuOpen])
 
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => { abortControllerRef.current?.abort() }
+  }, [])
+
+  // Update a form field and clear its error
+  const updateField = useCallback((field: string, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }))
+    setErrors(prev => {
+      if (prev[field]) {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      }
+      return prev
+    })
+    if (serverError) setServerError('')
+  }, [serverError])
+
   const validate = useCallback(() => {
     const e: Record<string, string> = {}
     if (!form.name.trim()) e.name = 'Full name is required'
+    else if (form.name.trim().length < 2) e.name = 'Name must be at least 2 characters'
+    else if (form.name.trim().length > 200) e.name = 'Name is too long'
+
     if (!form.email.trim()) e.email = 'Email is required'
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) e.email = 'Enter a valid email'
+
     if (!form.phone.trim()) e.phone = 'Phone number is required'
+    else if (!/^[\d\s\+\-\(\)]{7,20}$/.test(form.phone.trim())) e.phone = 'Enter a valid phone number'
+
+    if (form.message.length > 2000) e.message = 'Message must be under 2000 characters'
+
     return e
   }, [form])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // Prevent double submission
+    if (status === 'loading') return
+
     const errs = validate()
     setErrors(errs)
+    setServerError('')
     if (Object.keys(errs).length) return
+
+    // Abort any previous in-flight request
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setStatus('loading')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
+        body: JSON.stringify(form),
+        signal: controller.signal,
       })
-      setStatus(res.ok ? 'success' : 'error')
-    } catch {
+
+      if (res.ok) {
+        setStatus('success')
+      } else {
+        let errorMsg = 'Something went wrong. Please try again.'
+        try {
+          const data = await res.json()
+          if (data.error) errorMsg = data.error
+        } catch { /* ignore parse errors */ }
+
+        if (res.status === 429) {
+          errorMsg = 'Too many submissions. Please wait a moment and try again.'
+        }
+
+        setServerError(errorMsg)
+        setStatus('error')
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return
+      setServerError('Network error. Please check your connection and try again.')
       setStatus('error')
     }
   }
@@ -329,16 +388,16 @@ export default function ContactPage() {
           backdropFilter: 'blur(10px)',
         }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <input type="text" name="honeypot" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+            <input type="text" name="honeypot" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, overflow: 'hidden' }} tabIndex={-1} autoComplete="off" aria-hidden="true" />
 
             {/* Row 1: Full Name + Email */}
             <div className="form-row-2col">
               <FormField label="Full Name" required error={errors.name}>
-                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                  placeholder="John" style={inputStyle(!!errors.name)} />
+                <input value={form.name} onChange={e => updateField('name', e.target.value)}
+                  placeholder="John" maxLength={200} style={inputStyle(!!errors.name)} />
               </FormField>
               <FormField label="Email ID" required error={errors.email}>
-                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                <input type="email" value={form.email} onChange={e => updateField('email', e.target.value)}
                   placeholder="Johndoe@example.com" style={inputStyle(!!errors.email)} />
               </FormField>
             </div>
@@ -346,19 +405,19 @@ export default function ContactPage() {
             {/* Row 2: DOB + Phone */}
             <div className="form-row-2col">
               <FormField label="Date of Birth" required>
-                <input type="date" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })}
+                <input type="date" value={form.dob} onChange={e => updateField('dob', e.target.value)}
                   placeholder="dd/mm/yyyy" style={{ ...inputStyle(false), colorScheme: 'dark' }} />
               </FormField>
               <FormField label="Phone No." required error={errors.phone}>
-                <input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
-                  placeholder="00000 00000" style={inputStyle(!!errors.phone)} />
+                <input type="tel" value={form.phone} onChange={e => updateField('phone', e.target.value)}
+                  placeholder="00000 00000" maxLength={20} style={inputStyle(!!errors.phone)} />
               </FormField>
             </div>
 
             {/* Row 3: Gender + Location */}
             <div className="form-row-2col">
               <FormField label="Specify Your Gender">
-                <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })}
+                <select value={form.gender} onChange={e => updateField('gender', e.target.value)}
                   style={{ ...inputStyle(false), appearance: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
                   <option value="">Select</option>
                   <option value="male">Male</option>
@@ -368,8 +427,8 @@ export default function ContactPage() {
                 </select>
               </FormField>
               <FormField label="Where Do You Live?">
-                <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })}
-                  placeholder="Bangalore" style={inputStyle(false)} />
+                <input value={form.location} onChange={e => updateField('location', e.target.value)}
+                  placeholder="Bangalore" maxLength={200} style={inputStyle(false)} />
               </FormField>
             </div>
 
@@ -381,7 +440,7 @@ export default function ContactPage() {
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {['LIT Programmes', 'A Career at LIT', 'Other'].map(type => (
                   <button key={type} type="button"
-                    onClick={() => setForm({ ...form, enquiryType: type })}
+                    onClick={() => updateField('enquiryType', type)}
                     style={{
                       padding: '10px 20px', borderRadius: '999px', fontSize: '14px',
                       fontWeight: 500, cursor: 'pointer',
@@ -403,7 +462,7 @@ export default function ContactPage() {
             {form.enquiryType === 'LIT Programmes' && (
               <div style={{ animation: 'fadeInUp 0.3s ease' }}>
                 <FormField label="Course of Interest">
-                  <select value={form.courseInterest} onChange={e => setForm({ ...form, courseInterest: e.target.value })}
+                  <select value={form.courseInterest} onChange={e => updateField('courseInterest', e.target.value)}
                     style={{ ...inputStyle(false), appearance: 'none', cursor: 'pointer', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center' }}>
                     <option value="">Select a programme</option>
                     <option value="creator-marketer">Creator Marketer</option>
@@ -417,9 +476,15 @@ export default function ContactPage() {
 
             {/* Message */}
             <FormField label="Your Message">
-              <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+              <textarea value={form.message} onChange={e => updateField('message', e.target.value)}
                 placeholder="Tell us more about your enquiry..."
-                style={{ ...inputStyle(false), minHeight: '90px', resize: 'vertical' }} />
+                maxLength={2000}
+                style={{ ...inputStyle(!!errors.message), minHeight: '90px', resize: 'vertical' }} />
+              {form.message.length > 0 && (
+                <p style={{ color: form.message.length > 1800 ? 'var(--text-error)' : 'var(--text-muted)', fontSize: '12px', marginTop: '4px', textAlign: 'right' }}>
+                  {form.message.length}/2000
+                </p>
+              )}
             </FormField>
 
             {/* Submit Row */}
@@ -456,7 +521,7 @@ export default function ContactPage() {
 
             {status === 'error' && (
               <p style={{ color: 'var(--text-error)', textAlign: 'center', fontSize: '14px', animation: 'fadeIn 0.3s ease' }}>
-                Oops! Something went wrong while submitting the form. Please try again.
+                {serverError || 'Oops! Something went wrong while submitting the form. Please try again.'}
               </p>
             )}
           </form>

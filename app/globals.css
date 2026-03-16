@@ -319,10 +319,20 @@ body::before {
    Form Field Rows
    ============================================ */
 
+/* Use CSS custom property so media queries can override without !important conflicts */
 .form-row-2col {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  --form-cols: 1fr 1fr;
+  display: grid;
+  grid-template-columns: var(--form-cols);
   gap: 16px;
+}
+
+/* Ensure all form inputs can shrink properly */
+.form-row-2col input,
+.form-row-2col select,
+.form-row-2col textarea {
+  min-width: 0;
+  width: 100%;
 }
 
 /* ============================================
@@ -584,7 +594,7 @@ textarea::placeholder {
   :root {
     --page-pad: 16px;
     --nav-height: 56px;
-    --ticker-height: 60px;
+    --ticker-height: 36px;
   }
 
   body::before {
@@ -607,8 +617,10 @@ textarea::placeholder {
     height: 220px;
   }
 
+  /* Stack form fields to single column on mobile */
   .form-row-2col {
-    gap: 12px;
+    --form-cols: 1fr;
+    gap: 14px;
   }
 
   .faq-section {
@@ -628,6 +640,21 @@ textarea::placeholder {
     padding: 40px var(--page-pad);
   }
 
+  /* Stack newsletter input + subscribe button vertically */
+  .newsletter-input-row {
+    flex-direction: column;
+  }
+
+  .newsletter-input-row input {
+    border-radius: 12px;
+    border-right: 1px solid var(--border-default);
+  }
+
+  .newsletter-input-row button {
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+
   .floating-actions {
     bottom: 16px;
     right: 16px;
@@ -636,5 +663,50 @@ textarea::placeholder {
   .floating-btn {
     width: 48px;
     height: 48px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE — Small Mobile (≤ 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+  :root {
+    --page-pad: 12px;
+    --ticker-height: 32px;
+  }
+
+  .hero-section {
+    padding-top: calc(var(--ticker-height) + var(--nav-height) + 12px);
+    padding-bottom: 24px;
+    gap: 16px;
+  }
+
+  .hero-illustration {
+    height: 180px;
+  }
+
+  .newsletter-section {
+    padding: 28px var(--page-pad);
+  }
+
+  .faq-heading {
+    font-size: 1.75rem;
+  }
+
+  .floating-actions {
+    bottom: 12px;
+    right: 12px;
+    gap: 8px;
+  }
+
+  .floating-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .floating-btn svg {
+    width: 20px;
+    height: 20px;
   }
 }

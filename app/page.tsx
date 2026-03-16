@@ -384,8 +384,8 @@ export default function ContactPage() {
         {/* Right Column: Contact Form Card — on mobile this goes FIRST */}
         <div className="animate-on-scroll delay-1 hero-right" style={{
           background: 'rgba(26,26,26,0.9)', borderRadius: '24px',
-          padding: 'clamp(20px, 4vw, 36px)', border: '1px solid var(--border-default)',
-          backdropFilter: 'blur(10px)',
+          padding: 'clamp(16px, 4vw, 36px)', border: '1px solid var(--border-default)',
+          backdropFilter: 'blur(10px)', overflow: 'hidden',
         }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <input type="text" name="honeypot" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, overflow: 'hidden' }} tabIndex={-1} autoComplete="off" aria-hidden="true" />
@@ -442,7 +442,7 @@ export default function ContactPage() {
                   <button key={type} type="button"
                     onClick={() => updateField('enquiryType', type)}
                     style={{
-                      padding: '10px 20px', borderRadius: '999px', fontSize: '14px',
+                      padding: '10px 16px', borderRadius: '999px', fontSize: 'clamp(12px, 2.5vw, 14px)',
                       fontWeight: 500, cursor: 'pointer',
                       transition: 'all var(--transition-normal)',
                       background: form.enquiryType === type ? 'white' : 'transparent',
@@ -681,14 +681,14 @@ export default function ContactPage() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '15px', lineHeight: 1.6, marginBottom: '28px' }}>
               Stay in the loop and unlock exclusive content, industry insights, and exciting updates by signing up for our newsletter today!
             </p>
-            <div style={{ display: 'flex', gap: '0', alignItems: 'stretch' }}>
+            <div className="newsletter-input-row" style={{ display: 'flex', gap: '0', alignItems: 'stretch' }}>
               <input placeholder="Enter Your Email"
                 style={{
                   flex: 1, padding: '14px 18px', background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-default)', borderRight: 'none',
-                  borderRadius: '12px 0 0 12px', color: 'white', fontSize: '15px',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: '12px 0 0 12px', color: 'white', fontSize: 'clamp(13px, 2.5vw, 15px)',
                   outline: 'none', transition: 'border-color var(--transition-normal)',
-                  minWidth: 0,
+                  minWidth: 0, boxSizing: 'border-box' as const,
                 }}
                 onFocus={e => e.currentTarget.style.borderColor = 'var(--magenta)'}
                 onBlur={e => e.currentTarget.style.borderColor = 'var(--border-default)'}

@@ -106,20 +106,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Build a comprehensive message that includes all form fields
-    // (the leads table only has: id, name, email, message, created_at, sent_confirmation)
-    const messageParts: string[] = []
-    if (cleanPhone) messageParts.push(`Phone: ${cleanPhone}`)
-    if (cleanDob) messageParts.push(`DOB: ${cleanDob}`)
-    if (cleanGender) messageParts.push(`Gender: ${cleanGender}`)
-    if (cleanLocation) messageParts.push(`Location: ${cleanLocation}`)
-    if (cleanEnquiryType) messageParts.push(`Enquiry Type: ${cleanEnquiryType}`)
-    if (cleanCourseInterest) messageParts.push(`Course Interest: ${cleanCourseInterest}`)
-    if (cleanMessage) messageParts.push(`\nMessage:\n${cleanMessage}`)
-
-    const fullMessage = messageParts.join('\n') || 'No additional details provided'
-
-    // Use fetch directly to Supabase REST API for more control
+    // Insert each field into its own column
     const supabaseResponse = await fetch(`${supabaseUrl}/rest/v1/leads`, {
       method: 'POST',
       headers: {
@@ -131,7 +118,13 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         name: cleanName,
         email: cleanEmail,
-        message: fullMessage,
+        phone: cleanPhone || null,
+        dob: cleanDob || null,
+        gender: cleanGender || null,
+        location: cleanLocation || null,
+        enquiry_type: cleanEnquiryType || null,
+        course_interest: cleanCourseInterest || null,
+        message: cleanMessage || null,
         sent_confirmation: false,
       }),
     })

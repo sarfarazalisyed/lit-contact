@@ -218,35 +218,24 @@ export default function ContactPage() {
     <div ref={scrollRef} style={{ position: 'relative', zIndex: 1 }}>
 
       {/* ════════════════════════════════════════════
-          SECTION 1: Scrolling Ticker Bar
+          SECTION 1: Scrolling Ticker Bar (NOT fixed — scrolls away)
           ════════════════════════════════════════════ */}
-      <div style={{
-        background: 'var(--blue)', height: 'var(--ticker-height)',
-        overflow: 'hidden', display: 'flex', alignItems: 'center',
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-      }}>
-        <div style={{
-          display: 'flex', whiteSpace: 'nowrap',
-          animation: 'marquee 20s linear infinite',
-        }}>
-          {[...Array(8)].map((_, i) => (
-            <span key={i} style={{
-              display: 'inline-flex', alignItems: 'center', gap: '12px',
-              fontSize: '13px', fontWeight: 600, color: 'white',
-              letterSpacing: '0.5px', paddingRight: '40px',
-            }}>
+      <div className="ticker-bar">
+        <div className="ticker-track">
+          {[...Array(12)].map((_, i) => (
+            <span key={i} className="ticker-item">
               NEXT BATCH STARTS ON 20TH APRIL 2026
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: '24px', height: '24px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)', flexShrink: 0,
-              }}>▶</span>
+              <span className="ticker-play-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="white">
+                  <path d="M2 1.5L8 5L2 8.5V1.5Z" />
+                </svg>
+              </span>
               BECOME A FULL STACK MARKETER
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                width: '24px', height: '24px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.2)', flexShrink: 0,
-              }}>▶</span>
+              <span className="ticker-play-icon">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="white">
+                  <path d="M2 1.5L8 5L2 8.5V1.5Z" />
+                </svg>
+              </span>
             </span>
           ))}
         </div>
@@ -256,49 +245,38 @@ export default function ContactPage() {
           SECTION 2: Sticky Navigation
           ════════════════════════════════════════════ */}
       <nav className="nav-bar" style={{
-        background: navScrolled ? 'rgba(10,10,10,0.85)' : 'transparent',
-        backdropFilter: navScrolled ? 'blur(20px)' : 'none',
-        borderBottom: navScrolled ? '1px solid var(--border-default)' : '1px solid transparent',
+        background: navScrolled ? 'rgba(0,0,0,0.8)' : 'transparent',
+        backdropFilter: navScrolled ? 'blur(10px)' : 'none',
+        WebkitBackdropFilter: navScrolled ? 'blur(10px)' : 'none',
       }}>
         {/* LIT Logo */}
-        <div style={{ cursor: 'pointer', position: 'relative', width: '48px', height: '48px' }}>
+        <div style={{ cursor: 'pointer', flexShrink: 0 }}>
           <Image
             src="/lit-logo.png"
             alt="LIT School Logo"
-            width={48}
-            height={48}
+            width={52}
+            height={58}
             style={{ objectFit: 'contain' }}
+            priority
           />
         </div>
 
         {/* Nav Buttons + Hamburger */}
         <div className="nav-buttons">
-          {/* Hamburger — only visible on mobile/tablet */}
+          {/* Hamburger — only visible on mobile/tablet via CSS */}
           <button className="hamburger-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu">
             <span /><span /><span />
           </button>
 
-          <button className="nav-btn-contact" style={{
-            padding: '10px 24px', background: 'white', color: '#0a0a0a',
-            border: '2px solid white', borderRadius: '999px', fontSize: '14px',
-            fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
-            letterSpacing: '0.3px',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'white' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#0a0a0a' }}
-          >
+          <button className="nav-btn-contact" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             Contact Us
           </button>
-          <button className="nav-btn-enquire" style={{
-            padding: '10px 24px', background: 'var(--gradient-cyan)',
-            color: 'white', border: 'none', borderRadius: '999px', fontSize: '14px',
-            fontWeight: 600, cursor: 'pointer', transition: 'all var(--transition-normal)',
-            letterSpacing: '0.3px', boxShadow: '0 2px 15px rgba(34,211,238,0.3)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 25px rgba(34,211,238,0.5)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 15px rgba(34,211,238,0.3)' }}
-          >
+          <button className="nav-btn-enquire">
             Enquire Now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+              <path d="M7 17L17 7" />
+              <path d="M7 7h10v10" />
+            </svg>
           </button>
         </div>
       </nav>
@@ -308,30 +286,33 @@ export default function ContactPage() {
           ════════════════════════════════════════════ */}
       <div className={`mobile-menu-overlay ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} />
       <div className={`mobile-menu-drawer ${menuOpen ? 'open' : ''}`}>
+        {/* Close button */}
         <button className="mobile-menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
-          ✕
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+          </svg>
         </button>
-        <button style={{
-          padding: '14px 0', background: 'transparent', color: 'white',
-          border: 'none', borderBottom: '1px solid var(--border-default)',
-          fontSize: '16px', fontWeight: 600, cursor: 'pointer', textAlign: 'left',
-        }}>
-          Home
-        </button>
-        <button style={{
-          padding: '14px 0', background: 'transparent', color: 'white',
-          border: 'none', borderBottom: '1px solid var(--border-default)',
-          fontSize: '16px', fontWeight: 600, cursor: 'pointer', textAlign: 'left',
-        }}>
-          Contact Us
-        </button>
-        <button style={{
-          padding: '14px 28px', background: 'var(--gradient-cyan)',
-          color: 'white', border: 'none', borderRadius: '999px', fontSize: '16px',
-          fontWeight: 600, cursor: 'pointer', marginTop: '16px', textAlign: 'center',
-        }}>
-          Enquire Now
-        </button>
+
+        {/* Program Links */}
+        <div className="mobile-menu-links">
+          <a href="#" className="mobile-menu-link">Creator Marketer</a>
+          <a href="#" className="mobile-menu-link">CreatorPreneur</a>
+          <a href="#" className="mobile-menu-link">Next Gen Business</a>
+          <a href="#" className="mobile-menu-link">Creator+</a>
+        </div>
+
+        {/* Bottom actions */}
+        <div className="mobile-menu-actions">
+          <button className="mobile-menu-contact-btn" onClick={() => { setMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+            CONTACT US
+          </button>
+          <button className="mobile-menu-enquire-btn">
+            ENQUIRE NOW
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '6px' }}>
+              <path d="M7 17L17 7" /><path d="M7 7h10v10" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* ════════════════════════════════════════════

@@ -261,18 +261,14 @@ export default function ContactPage() {
         borderBottom: navScrolled ? '1px solid var(--border-default)' : '1px solid transparent',
       }}>
         {/* LIT Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'pointer' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <div style={{ display: 'flex', gap: '2px' }}>
-              <div style={{ width: '4px', height: '12px', background: '#F472B6', borderRadius: '1px' }} />
-              <div style={{ width: '4px', height: '20px', background: '#A855F7', borderRadius: '1px', marginTop: '-8px' }} />
-            </div>
-          </div>
-          <span style={{
-            fontSize: '28px', fontWeight: 800, letterSpacing: '-1px',
-            background: 'linear-gradient(135deg, #fff 60%, #A855F7)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>LIT</span>
+        <div style={{ cursor: 'pointer', position: 'relative', width: '48px', height: '48px' }}>
+          <Image
+            src="/lit-logo.png"
+            alt="LIT School Logo"
+            width={48}
+            height={48}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         {/* Nav Buttons + Hamburger */}
@@ -662,10 +658,10 @@ export default function ContactPage() {
               width: '80px', height: '80px', borderRadius: '50%',
               background: '#111', border: '3px solid #333',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: '18px',
               boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+              overflow: 'hidden', padding: '12px',
             }}>
-              LIT
+              <Image src="/lit-logo.png" alt="LIT" width={56} height={56} style={{ objectFit: 'contain' }} />
             </div>
           </div>
 

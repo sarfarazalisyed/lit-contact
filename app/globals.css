@@ -55,15 +55,13 @@
   --transition-slow: 500ms ease;
 
   /* Fonts */
-  --font-sans: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-body: var(--font-open-sauce), system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), system-ui, sans-serif;
 }
 
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 /* ============================================
@@ -79,18 +77,22 @@ html {
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-body) !important;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading) !important;
 }
 
 /* Grid background pattern */
@@ -309,12 +311,11 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.2px;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .nav-btn-contact:hover {
-  border-color: #666;
-  background: #1a1a1a;
+  border-radius: 10px;
 }
 
 /* Enquire Now button — teal-to-blue gradient, capsule */
@@ -331,12 +332,11 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.2px;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .nav-btn-enquire:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 25px rgba(5, 200, 196, 0.4);
+  border-radius: 10px;
 }
 
 /* Hamburger */
@@ -663,12 +663,11 @@ textarea::placeholder {
   letter-spacing: 1px;
   transition: all 0.3s ease;
   text-align: center;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .mobile-menu-contact-btn:hover {
-  border-color: #666;
-  background: #1a1a1a;
+  border-radius: 10px;
 }
 
 .mobile-menu-enquire-btn {
@@ -685,12 +684,11 @@ textarea::placeholder {
   cursor: pointer;
   letter-spacing: 1px;
   transition: all 0.3s ease;
-  font-family: var(--font-sans);
+  font-family: var(--font-heading);
 }
 
 .mobile-menu-enquire-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 25px rgba(5, 200, 196, 0.4);
+  border-radius: 10px;
 }
 
 /* ============================================

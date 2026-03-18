@@ -560,11 +560,20 @@ export default function ContactPage() {
             border: "1px solid var(--border-default)",
             backdropFilter: "blur(10px)",
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
+          <h2 style={{
+            fontSize: "clamp(1.5rem, 3vw, 2rem)",
+            fontWeight: 700,
+            marginBottom: "24px",
+          }}>
+            Contact Form
+          </h2>
           <form
             onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            style={{ display: "flex", flexDirection: "column", gap: "28px", flex: 1 }}
           >
             <input
               type="text"
@@ -1230,8 +1239,8 @@ export default function ContactPage() {
           >
             <p
               style={{
-                color: "var(--text-muted)",
-                fontSize: "14px",
+                color: "white",
+                fontSize: "16px",
                 margin: 0,
               }}
             >
@@ -1239,8 +1248,8 @@ export default function ContactPage() {
             </p>
             <p
               style={{
-                color: "var(--text-muted)",
-                fontSize: "14px",
+                color: "white",
+                fontSize: "16px",
                 margin: 0,
               }}
             >

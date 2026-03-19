@@ -445,8 +445,8 @@ body::before {
 
 .faq-answer-card {
   margin-top: 16px;
-  margin-left: 40px;
   padding: 28px;
+  padding-bottom: 36px;
   border-radius: 20px;
   background: rgba(0,0,0,0.25);
   backdrop-filter: blur(15px);
@@ -730,8 +730,8 @@ textarea::placeholder {
   }
 
   .faq-answer-card {
-    margin-left: 16px;
     padding: 20px;
+    padding-bottom: 32px;
   }
 
   .newsletter-grid {
@@ -792,8 +792,8 @@ textarea::placeholder {
   }
 
   .faq-answer-card {
-    margin-left: 0;
     padding: 16px;
+    padding-bottom: 28px;
   }
 
   .newsletter-section {

@@ -16,21 +16,71 @@ const mainFaqs = [
   },
   {
     q: "What is the duration of the programmes?",
-    a: "The Next Gen Business is a 15 month Programme that will consist of 12 months of Experiential Learning + 3 months of Paid Internship.\n\nThe Creator + Programme is a 12 month programme that consists of 10 months of Experiential Learning + 2 months of Paid Internship.",
+    a: "The CreatorPreneur Programme & Next Gen Business Programmes are 3 year programmes that will consist of 24 months of Experiential Learning + 6 months of Paid Internship + 6 months of Business Incubation.\n\nThe Creator Marketer Programme is a 15 month Programme that will consist of 12 months of Experiential Learning + 3 months of Paid Internship.\n\nThe Creator + Programme is a 12 month programme that consists of 10 months of Experiential Learning + 2 months of Paid Internship.",
   },
 ];
 
 const additionalFaqs = [
-  "Is the programme conducted online or offline?",
-  "What are the Programme timings?",
-  "Who are some industry experts that have visited The LIT School?",
-  "How many students are there per batch?",
-  "What is the application process?",
-  "Does The LIT School offer scholarships?",
-  "Does The LIT School offer placement assistance?",
-  "Does LIT School offer scholarships?",
-  "Do the evening school programmes offer a diploma?",
-  "Does the UG programme offer a Bachelors Degree?",
+  {
+    q: "Is the programme conducted online or offline?",
+    a: "The Creator Marketer Programme is an experiential learning programme thus it would be a completely offline programme.",
+  },
+  {
+    q: "What are the Programme timings?",
+    a: "The UG Programme timings would be 10:30am to 4:30pm. The Evening School programmes would be from 4:30pm to 7:30pm.",
+  },
+  {
+    q: "Who are some industry experts that have visited The LIT School?",
+    a: "Varun Mayya, Raj Shamani, Ganesh Prasad (ThinkSchool), Kusha Kapila, Sabeer Bhatia, Orry, and more!",
+  },
+  {
+    q: "What are EPICs?",
+    a: "EPICs (Experiential Programmes in an Integrated Curriculum) replace traditional subjects. The Creator Marketer Programme consists of 6 EPICs throughout the course of 12 months.",
+  },
+  {
+    q: "How detailed are EPICs?",
+    a: "Each EPIC lasts around 45-60 days, giving students enough time to deeply understand each topic.",
+  },
+  {
+    q: "What if I miss a class?",
+    a: "Don't Worry! All classes are recorded and uploaded to a shared Google Drive, along with notes, so you can catch up anytime!",
+  },
+  {
+    q: "How many students are there per batch?",
+    a: "The LIT School only takes in 50 students per batch.",
+  },
+  {
+    q: "What is the application process?",
+    a: "Step 1: Fill in the application with details along with answering the SOP Questions on the basis of which your applications may or may not be shortlisted. Step 2: If your application has been shortlisted, your Interview will be scheduled for you and the details will be sent to you via email. Step 3: If you get accepted through the interview round for The LIT School, the final steps would be to reserve your seat by paying the admission fees.",
+  },
+  {
+    q: "Does The LIT School offer scholarships?",
+    a: "Yes, through the LITMUS Test and an interview, which evaluates creativity, originality, relatability, and pitch of a solution to a brand brief. Through this process, the students can avail a 5%, 8%, 12%, or 15% based on their performance.",
+  },
+  {
+    q: "Does The LIT School offer placement assistance?",
+    a: "Yes – The LIT School provides 100% lifelong placement assistance!",
+  },
+  {
+    q: "Does LIT School offer scholarships?",
+    a: "Yes, through the LITMUS Test and an interview, which evaluates creativity, originality, relatability, and pitch of a solution to a brand brief. Through this process, the students can avail a 5%, 8%, 12%, or 15% based on their performance. LIT School also has special category scholarships, these scholarships recognise execution, impact, and initiative beyond academics.",
+  },
+  {
+    q: "Do the evening school programmes offer a diploma?",
+    a: "Yes, the evening school students would receive a diploma from NAAC A+ Accredited University.",
+  },
+  {
+    q: "Does the UG programme offer a Bachelors Degree?",
+    a: "Yes, the Next Gen Business and CreatorPreneur Programme offer Bachelor's Degree from a NAAC A+ accredited University.",
+  },
+  {
+    q: "Does LIT provide hostel facilities?",
+    a: "No, LIT School does not have its own hostel facility however LIT does have a dedicated Admin Team that assists with looking for accommodation based on your budget and preferences.",
+  },
+  {
+    q: "What will I receive at the end of the programme?",
+    a: "A Degree/Diploma and a LIT Profile showcasing all brand briefs solved, solutions provided, and mentor endorsements via LinkedIn.",
+  },
 ];
 
 /* ─────────────────────────────────────────────
@@ -83,7 +133,10 @@ export default function ContactPage() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [serverError, setServerError] = useState("");
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<Set<number>>(new Set([0, 1, 2]));
+  const [openAdditionalFaq, setOpenAdditionalFaq] = useState<Set<number>>(
+    new Set(),
+  );
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const scrollRef = useScrollAnimation();
@@ -564,16 +617,23 @@ export default function ContactPage() {
             flexDirection: "column",
           }}
         >
-          <h2 style={{
-            fontSize: "clamp(1.5rem, 3vw, 2rem)",
-            fontWeight: 700,
-            marginBottom: "24px",
-          }}>
+          <h2
+            style={{
+              fontSize: "clamp(1.5rem, 3vw, 2rem)",
+              fontWeight: 700,
+              marginBottom: "24px",
+            }}
+          >
             Contact Form
           </h2>
           <form
             onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "28px", flex: 1 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "28px",
+              flex: 1,
+            }}
           >
             <input
               type="text"
@@ -939,7 +999,14 @@ export default function ContactPage() {
               >
                 {/* Question Pill */}
                 <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  onClick={() => {
+                    setOpenFaq((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(i)) next.delete(i);
+                      else next.add(i);
+                      return next;
+                    });
+                  }}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -951,10 +1018,9 @@ export default function ContactPage() {
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "all var(--transition-normal)",
-                    background:
-                      openFaq === i
-                        ? "rgba(255,255,255,0.15)"
-                        : "rgba(0,0,0,0.3)",
+                    background: openFaq.has(i)
+                      ? "rgba(255,255,255,0.15)"
+                      : "rgba(0,0,0,0.3)",
                     color: "white",
                     border: "1px solid rgba(255,255,255,0.25)",
                     backdropFilter: "blur(10px)",
@@ -974,7 +1040,7 @@ export default function ContactPage() {
                 </button>
 
                 {/* Answer Card */}
-                {openFaq === i && (
+                {openFaq.has(i) && (
                   <div className="faq-answer-card">
                     <div
                       style={{
@@ -987,26 +1053,17 @@ export default function ContactPage() {
                       {faq.a}
                     </div>
                     {/* Arrow icon */}
-                    <div
+                    <Image
+                      src="/pink-arrow-icon.png"
+                      alt="Arrow"
+                      width={36}
+                      height={36}
                       style={{
                         position: "absolute",
-                        bottom: "-16px",
-                        right: "20px",
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(0,0,0,0.3)",
-                        backdropFilter: "blur(10px)",
-                        color: "var(--purple)",
-                        fontSize: "16px",
+                        bottom: "0px",
+                        right: "-45px",
                       }}
-                    >
-                      ↗
-                    </div>
+                    />
                   </div>
                 )}
               </div>
@@ -1029,38 +1086,79 @@ export default function ContactPage() {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
-            {additionalFaqs.map((q, i) => (
-              <button
+            {additionalFaqs.map((faq, i) => (
+              <div
                 key={i}
                 className="animate-on-scroll"
-                style={{
-                  display: "inline-block",
-                  width: "fit-content",
-                  maxWidth: "100%",
-                  padding: "clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px)",
-                  borderRadius: "999px",
-                  fontSize: "clamp(13px, 2vw, 15px)",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all var(--transition-normal)",
-                  background: "rgba(0,0,0,0.2)",
-                  color: "white",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                  backdropFilter: "blur(10px)",
-                  transitionDelay: `${i * 0.05}s`,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
-                  e.currentTarget.style.transform = "translateX(8px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}
+                style={{ transitionDelay: `${i * 0.05}s` }}
               >
-                {q}
-              </button>
+                <button
+                  onClick={() => {
+                    setOpenAdditionalFaq((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(i)) next.delete(i);
+                      else next.add(i);
+                      return next;
+                    });
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    width: "fit-content",
+                    maxWidth: "100%",
+                    padding: "clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px)",
+                    borderRadius: "999px",
+                    fontSize: "clamp(13px, 2vw, 15px)",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all var(--transition-normal)",
+                    background: openAdditionalFaq.has(i)
+                      ? "rgba(255,255,255,0.15)"
+                      : "rgba(0,0,0,0.2)",
+                    color: "white",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)";
+                    e.currentTarget.style.transform = "translateX(8px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                    e.currentTarget.style.transform = "translateX(0)";
+                  }}
+                >
+                  {faq.q}
+                </button>
+
+                {openAdditionalFaq.has(i) && (
+                  <div className="faq-answer-card">
+                    <div
+                      style={{
+                        color: "rgba(255,255,255,0.85)",
+                        fontSize: "15px",
+                        lineHeight: 1.7,
+                        whiteSpace: "pre-line",
+                      }}
+                    >
+                      {faq.a}
+                    </div>
+                    <Image
+                      src="/pink-arrow-icon.png"
+                      alt="Arrow"
+                      width={36}
+                      height={36}
+                      style={{
+                        position: "absolute",
+                        bottom: "0px",
+                        right: "-45px",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

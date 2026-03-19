@@ -252,6 +252,46 @@ export default function ContactPage() {
   );
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
+  const [newsletterStatus, setNewsletterStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const handleNewsletterSubmit = async () => {
+    if (!newsletterEmail.trim()) {
+      setNewsletterStatus({ type: "error", message: "Please enter your email." });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newsletterEmail.trim())) {
+      setNewsletterStatus({ type: "error", message: "Please enter a valid email." });
+      return;
+    }
+
+    setNewsletterSubmitting(true);
+    setNewsletterStatus(null);
+
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail.trim() }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setNewsletterStatus({ type: "success", message: "Subscribed successfully!" });
+        setNewsletterEmail("");
+      } else {
+        setNewsletterStatus({ type: "error", message: data.error || "Something went wrong." });
+      }
+    } catch {
+      setNewsletterStatus({ type: "error", message: "Network error. Please try again." });
+    } finally {
+      setNewsletterSubmitting(false);
+    }
+  };
   const scrollRef = useScrollAnimation();
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -1391,9 +1431,17 @@ export default function ContactPage() {
                 <input
                   className="newsletter-email-input"
                   placeholder="Enter Your Email"
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => {
+                    setNewsletterEmail(e.target.value);
+                    setNewsletterStatus(null);
+                  }}
                 />
                 <button
                   className="newsletter-subscribe-btn"
+                  disabled={newsletterSubmitting}
+                  onClick={handleNewsletterSubmit}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "#fa69e5";
                   }}
@@ -1401,9 +1449,20 @@ export default function ContactPage() {
                     e.currentTarget.style.background = "black";
                   }}
                 >
-                  SUBSCRIBE
+                  {newsletterSubmitting ? "..." : "SUBSCRIBE"}
                 </button>
               </div>
+              {newsletterStatus && (
+                <p
+                  style={{
+                    marginTop: "8px",
+                    fontSize: "14px",
+                    color: newsletterStatus.type === "success" ? "#4ade80" : "#f87171",
+                  }}
+                >
+                  {newsletterStatus.message}
+                </p>
+              )}
             </div>
           </div>
         </section>

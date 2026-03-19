@@ -90,7 +90,12 @@ const BATCH_CLOSE_DATE = new Date("2026-04-20T23:59:59").getTime();
 
 function CountdownDigit({ value, label }: { value: number; label: string }) {
   const prevRef = useRef(value);
-  const [flip, setFlip] = useState<{ from: string; to: string; key: number } | null>(null);
+  const [shownValue, setShownValue] = useState(value);
+  const [flip, setFlip] = useState<{
+    from: string;
+    to: string;
+    key: number;
+  } | null>(null);
   const keyRef = useRef(0);
 
   useEffect(() => {
@@ -100,39 +105,50 @@ function CountdownDigit({ value, label }: { value: number; label: string }) {
       prevRef.current = value;
       keyRef.current += 1;
       setFlip({ from, to, key: keyRef.current });
-      const t = setTimeout(() => setFlip(null), 750);
+      // Update displayed value only after the full animation finishes
+      const t = setTimeout(() => {
+        setShownValue(value);
+        setFlip(null);
+      }, 700);
       return () => clearTimeout(t);
     }
   }, [value]);
 
-  const display = String(value).padStart(2, "0");
+  // `display` stays as OLD value during animation
+  const display = String(shownValue).padStart(2, "0");
 
   return (
     <div className="countdown-unit">
       <div className="flip-card">
-        {/* Static bottom half - shows current value (revealed when bottom flap lands) */}
+        {/* Static bottom - shows OLD value; covered by bottom flap (NEW) when it lands */}
         <div className="flip-panel flip-panel-bottom">
           <div className="flip-panel-inner">
             <span>{display}</span>
           </div>
         </div>
-        {/* Static top half - always shows current value */}
+        {/* Static top - shows NEW when flap present (revealed as flap flips away), else current */}
         <div className="flip-panel flip-panel-top">
           <div className="flip-panel-inner">
-            <span>{display}</span>
+            <span>{flip ? flip.to : display}</span>
           </div>
         </div>
-        {/* Animated top flap - shows OLD value, flips down to reveal new top underneath */}
+        {/* Animated top flap - shows OLD value, flips down to reveal NEW on static top */}
         {flip && (
-          <div className="flip-panel flip-panel-top flip-anim-top" key={`t${flip.key}`}>
+          <div
+            className="flip-panel flip-panel-top flip-anim-top"
+            key={`t${flip.key}`}
+          >
             <div className="flip-panel-inner">
               <span>{flip.from}</span>
             </div>
           </div>
         )}
-        {/* Animated bottom flap - shows NEW value, flips up into place */}
+        {/* Animated bottom flap - shows NEW value, flips into place over static bottom */}
         {flip && (
-          <div className="flip-panel flip-panel-bottom flip-anim-bottom" key={`b${flip.key}`}>
+          <div
+            className="flip-panel flip-panel-bottom flip-anim-bottom"
+            key={`b${flip.key}`}
+          >
             <div className="flip-panel-inner">
               <span>{flip.to}</span>
             </div>

@@ -289,7 +289,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0px clamp(20px, 4vw, 60px);
+  padding: 15px 3% 15px 5%;
   z-index: 999;
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
@@ -619,6 +619,10 @@ body::before {
    Newsletter & Footer
    ============================================ */
 
+.newsletter-footer-wrapper {
+  padding: var(--page-pad) var(--page-pad);
+}
+
 .newsletter-section {
   max-width: 1400px;
   margin: 0 0 20px 0;
@@ -631,11 +635,57 @@ body::before {
   align-items: stretch;
 }
 
+.newsletter-input-row {
+  position: relative;
+}
+
+.newsletter-email-input {
+  width: 100%;
+  height: 70px;
+  padding: 8px 180px 8px 24px;
+  background: #1e1e1e;
+  border: none;
+  border-radius: 16px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.newsletter-subscribe-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 63px;
+  padding: 16px 34px;
+  background: black;
+  color: white;
+  border: 1px solid #fa69e5;
+  border-radius: 100px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  white-space: nowrap;
+  margin: 3.5px 3.5px;
+}
+
 .footer-bar {
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
   align-items: center;
+}
+
+.footer-bar-inner {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #353535;
+  border-radius: 16px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 /* ============================================
@@ -867,6 +917,11 @@ textarea::placeholder {
     display: none !important;
   }
 
+  .nav-logo {
+    width: 40px !important;
+    height: 44.57px !important;
+  }
+
   .hero-section {
     grid-template-columns: 1fr !important;
     gap: 24px;
@@ -910,14 +965,28 @@ textarea::placeholder {
     padding-bottom: 32px;
   }
 
+  .newsletter-footer-wrapper {
+    padding: 0 0 var(--page-pad);
+  }
+
   .newsletter-grid {
     grid-template-columns: 1fr !important;
-    gap: 24px;
+    gap: 16px;
+    padding: 0 var(--page-pad);
+  }
+
+
+  .newsletter-section {
+    margin-bottom: 16px;
   }
 
   .footer-bar {
+    padding: 0 var(--page-pad);
+  }
+
+  .footer-bar-inner {
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     text-align: center;
   }
 }
@@ -1003,23 +1072,27 @@ textarea::placeholder {
     padding-bottom: 28px;
   }
 
-  .newsletter-section {
-    margin-bottom: 10px;
-  }
-
   /* Stack newsletter input + subscribe button vertically */
   .newsletter-input-row {
+    position: static;
+    display: flex;
     flex-direction: column;
+    gap: 12px;
   }
 
-  .newsletter-input-row input {
+  .newsletter-email-input {
+    padding: 8px 24px;
     border-radius: 12px;
-    border-right: 1px solid var(--border-default);
+    height: 60px;
   }
 
-  .newsletter-input-row button {
-    border-radius: 12px;
-    margin-top: 8px;
+  .newsletter-subscribe-btn {
+    position: static;
+    width: 100%;
+    height: auto;
+    padding: 20px 34px;
+    border-radius: 16px;
+    margin: 0;
   }
 
   .floating-actions {
@@ -1078,10 +1151,6 @@ textarea::placeholder {
 
   .hero-illustration {
     height: 180px;
-  }
-
-  .newsletter-section {
-    margin-bottom: 10px;
   }
 
   .faq-heading {

@@ -494,12 +494,11 @@ export default function ContactPage() {
         }}
       >
         {/* LIT Logo */}
-        <div style={{ cursor: "pointer", flexShrink: 0 }}>
+        <div className="nav-logo" style={{ cursor: "pointer", flexShrink: 0, position: "relative", width: 52, height: 58 }}>
           <Image
             src="/lit-logo.png"
             alt="LIT School Logo"
-            width={52}
-            height={58}
+            fill
             style={{ objectFit: "contain" }}
             priority
           />
@@ -1285,7 +1284,7 @@ export default function ContactPage() {
       {/* ════════════════════════════════════════════
           SECTION 5: Newsletter & Footer
           ════════════════════════════════════════════ */}
-      <div style={{ padding: "40px" }}>
+      <div className="newsletter-footer-wrapper">
         <section className="newsletter-section">
           <div className="animate-on-scroll newsletter-grid">
             {/* Left: Branding Card */}
@@ -1388,43 +1387,13 @@ export default function ContactPage() {
                 insights, and exciting updates by signing up for our newsletter
                 today!
               </p>
-              <div
-                className="newsletter-input-row"
-                style={{ position: "relative" }}
-              >
+              <div className="newsletter-input-row">
                 <input
+                  className="newsletter-email-input"
                   placeholder="Enter Your Email"
-                  style={{
-                    width: "100%",
-                    height: "70px",
-                    padding: "8px 180px 8px 24px",
-                    background: "#1e1e1e",
-                    border: "none",
-                    borderRadius: "16px",
-                    color: "white",
-                    fontSize: "14px",
-                    outline: "none",
-                    boxSizing: "border-box" as const,
-                  }}
                 />
                 <button
-                  style={{
-                    position: "absolute",
-                    right: "0",
-                    top: "0",
-                    height: "63px",
-                    padding: "16px 34px",
-                    background: "black",
-                    color: "white",
-                    border: "1px solid #fa69e5",
-                    borderRadius: "100px",
-                    fontSize: "18px",
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    transition: "all var(--transition-normal)",
-                    whiteSpace: "nowrap",
-                    margin: "3.5px 3.5px",
-                  }}
+                  className="newsletter-subscribe-btn"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "#fa69e5";
                   }}
@@ -1441,18 +1410,7 @@ export default function ContactPage() {
 
         {/* Footer Bottom Bar */}
         <footer className="footer-bar">
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              border: "1px solid #353535",
-              borderRadius: "16px",
-              padding: "24px",
-              background: "rgba(0,0,0,0.06)",
-            }}
-          >
+          <div className="footer-bar-inner">
             <p
               style={{
                 color: "white",

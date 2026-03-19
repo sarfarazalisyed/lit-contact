@@ -1068,13 +1068,13 @@ export default function ContactPage() {
             style={{ textAlign: "center", marginBottom: "48px" }}
           >
             <h2 className="faq-heading">
-              <span style={{ fontFamily: "var(--font-sans)" }}>
+              <span style={{ fontFamily: "var(--font-body)" }}>
                 Most Common
               </span>
               <br />
               <span
                 style={{
-                  fontFamily: "var(--font-playfair), Georgia, serif",
+                  fontFamily: "var(--font-heading)",
                   fontStyle: "italic",
                   fontWeight: 400,
                 }}

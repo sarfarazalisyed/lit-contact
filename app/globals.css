@@ -54,9 +54,6 @@
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
 
-  /* Fonts */
-  --font-body: var(--font-open-sauce), system-ui, sans-serif;
-  --font-heading: var(--font-bricolage), system-ui, sans-serif;
 }
 
 @theme inline {
@@ -81,6 +78,10 @@ html {
 }
 
 body {
+  /* Font vars defined here because Next.js sets --font-open-sauce / --font-bricolage on <body> */
+  --font-body: var(--font-open-sauce), system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), system-ui, sans-serif;
+
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body) !important;
@@ -792,7 +793,7 @@ textarea::placeholder {
   letter-spacing: -0.3px;
   border-bottom: 1px solid #222;
   transition: color 0.2s ease;
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
 .mobile-menu-link:hover {

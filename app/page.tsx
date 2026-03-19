@@ -84,6 +84,103 @@ const additionalFaqs = [
 ];
 
 /* ─────────────────────────────────────────────
+   Countdown Timer Component
+   ───────────────────────────────────────────── */
+const BATCH_CLOSE_DATE = new Date("2026-04-20T23:59:59").getTime();
+
+function CountdownDigit({ value, label }: { value: number; label: string }) {
+  const prevRef = useRef(value);
+  const [flip, setFlip] = useState<{ from: string; to: string; key: number } | null>(null);
+  const keyRef = useRef(0);
+
+  useEffect(() => {
+    if (value !== prevRef.current) {
+      const from = String(prevRef.current).padStart(2, "0");
+      const to = String(value).padStart(2, "0");
+      prevRef.current = value;
+      keyRef.current += 1;
+      setFlip({ from, to, key: keyRef.current });
+      const t = setTimeout(() => setFlip(null), 750);
+      return () => clearTimeout(t);
+    }
+  }, [value]);
+
+  const display = String(value).padStart(2, "0");
+
+  return (
+    <div className="countdown-unit">
+      <div className="flip-card">
+        {/* Static bottom half - shows current value (revealed when bottom flap lands) */}
+        <div className="flip-panel flip-panel-bottom">
+          <div className="flip-panel-inner">
+            <span>{display}</span>
+          </div>
+        </div>
+        {/* Static top half - always shows current value */}
+        <div className="flip-panel flip-panel-top">
+          <div className="flip-panel-inner">
+            <span>{display}</span>
+          </div>
+        </div>
+        {/* Animated top flap - shows OLD value, flips down to reveal new top underneath */}
+        {flip && (
+          <div className="flip-panel flip-panel-top flip-anim-top" key={`t${flip.key}`}>
+            <div className="flip-panel-inner">
+              <span>{flip.from}</span>
+            </div>
+          </div>
+        )}
+        {/* Animated bottom flap - shows NEW value, flips up into place */}
+        {flip && (
+          <div className="flip-panel flip-panel-bottom flip-anim-bottom" key={`b${flip.key}`}>
+            <div className="flip-panel-inner">
+              <span>{flip.to}</span>
+            </div>
+          </div>
+        )}
+        {/* Center line */}
+        <div className="flip-card-line" />
+      </div>
+      <span className="countdown-label">{label}</span>
+    </div>
+  );
+}
+
+function CountdownTimer() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const calc = () => {
+      const diff = Math.max(0, BATCH_CLOSE_DATE - Date.now());
+      return {
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      };
+    };
+    setTimeLeft(calc());
+    const id = setInterval(() => setTimeLeft(calc()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <section className="countdown-section">
+      <p className="countdown-title">Next batch closes in</p>
+      <div className="countdown-row">
+        <CountdownDigit value={timeLeft.days} label="Days" />
+        <span className="countdown-colon">:</span>
+        <CountdownDigit value={timeLeft.hours} label="Hours" />
+        <span className="countdown-colon">:</span>
+        <CountdownDigit value={timeLeft.minutes} label="Minutes" />
+        <span className="countdown-colon">:</span>
+        <CountdownDigit value={timeLeft.seconds} label="Seconds" />
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
    Intersection Observer Hook
    ───────────────────────────────────────────── */
 function useScrollAnimation() {
@@ -505,6 +602,11 @@ export default function ContactPage() {
           </button>
         </div>
       </div>
+
+      {/* ════════════════════════════════════════════
+          COUNTDOWN TIMER
+          ════════════════════════════════════════════ */}
+      <CountdownTimer />
 
       {/* ════════════════════════════════════════════
           SECTION 3: Hero — Form (right/top) + Pink Card (left/bottom)

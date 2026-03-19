@@ -288,7 +288,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 clamp(20px, 4vw, 60px);
+  padding: 0px clamp(20px, 4vw, 60px);
   z-index: 999;
   transition: background 0.3s ease, backdrop-filter 0.3s ease;
 }
@@ -367,6 +367,165 @@ body::before {
 
 .hamburger-btn:hover {
   border-color: #666;
+}
+
+/* ============================================
+   Countdown Timer Section
+   ============================================ */
+
+/* -- Countdown layout -- */
+.countdown-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px var(--page-pad) 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.countdown-title {
+  font-family: var(--font-heading) !important;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.countdown-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.countdown-colon {
+  font-family: var(--font-heading) !important;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 100px;
+  user-select: none;
+}
+
+.countdown-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* -- Flip card -- */
+.flip-card {
+  --flip-h: 100px;
+  --flip-w: 88px;
+  --flip-fs: 3rem;
+  position: relative;
+  width: var(--flip-w);
+  height: var(--flip-h);
+  perspective: 400px;
+}
+
+.flip-panel {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+}
+
+.flip-panel-top {
+  top: 0;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
+}
+
+.flip-panel-bottom {
+  top: 50%;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(180deg, #1a1a1a 0%, #151515 100%);
+}
+
+.flip-panel-inner {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 200%; /* double height so the text spans full card */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-panel-top .flip-panel-inner {
+  top: 0; /* top half of the doubled inner = top half of text */
+}
+
+.flip-panel-bottom .flip-panel-inner {
+  bottom: 0; /* bottom half of the doubled inner = bottom half of text */
+}
+
+.flip-panel-inner span {
+  font-family: var(--font-heading) !important;
+  font-size: var(--flip-fs);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+/* Center divider line */
+.flip-card-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* -- Flip animations -- */
+.flip-anim-top {
+  z-index: 5;
+  transform-origin: bottom center;
+  animation: flipDown 0.35s cubic-bezier(0.5, 0, 1, 0.5) forwards;
+}
+
+.flip-anim-bottom {
+  z-index: 4;
+  transform-origin: top center;
+  transform: rotateX(90deg);
+  animation: flipUp 0.35s 0.35s cubic-bezier(0, 0.5, 0.5, 1) forwards;
+}
+
+@keyframes flipDown {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes flipUp {
+  0% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
 }
 
 /* ============================================
@@ -725,6 +884,22 @@ textarea::placeholder {
     height: 600px;
   }
 
+  .countdown-section {
+    padding: 32px var(--page-pad) 16px;
+    gap: 16px;
+  }
+
+  .flip-card {
+    --flip-h: 84px;
+    --flip-w: 72px;
+    --flip-fs: 2.4rem;
+  }
+
+  .countdown-colon {
+    font-size: 2rem;
+    line-height: 84px;
+  }
+
   .faq-heading {
     font-size: 2.5rem;
   }
@@ -771,6 +946,37 @@ textarea::placeholder {
     padding-top: 24px;
     padding-bottom: 32px;
     gap: 20px;
+  }
+
+  .countdown-section {
+    padding: 24px var(--page-pad) 12px;
+    gap: 12px;
+  }
+
+  .countdown-row {
+    gap: 6px;
+  }
+
+  .flip-card {
+    --flip-h: 72px;
+    --flip-w: 60px;
+    --flip-fs: 2rem;
+  }
+
+  .flip-panel-top { border-radius: 8px 8px 0 0; }
+  .flip-panel-bottom { border-radius: 0 0 8px 8px; }
+
+  .countdown-colon {
+    font-size: 1.5rem;
+    line-height: 72px;
+  }
+
+  .countdown-title {
+    font-size: 0.8rem;
+  }
+
+  .countdown-label {
+    font-size: 0.65rem;
   }
 
   .hero-illustration {
@@ -840,6 +1046,33 @@ textarea::placeholder {
     padding-top: 16px;
     padding-bottom: 24px;
     gap: 16px;
+  }
+
+  .countdown-section {
+    padding: 20px var(--page-pad) 8px;
+    gap: 10px;
+  }
+
+  .countdown-row {
+    gap: 4px;
+  }
+
+  .flip-card {
+    --flip-h: 62px;
+    --flip-w: 52px;
+    --flip-fs: 1.6rem;
+  }
+
+  .flip-panel-top { border-radius: 6px 6px 0 0; }
+  .flip-panel-bottom { border-radius: 0 0 6px 6px; }
+
+  .countdown-colon {
+    font-size: 1.2rem;
+    line-height: 62px;
+  }
+
+  .countdown-unit {
+    gap: 6px;
   }
 
   .hero-illustration {
